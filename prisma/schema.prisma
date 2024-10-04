@@ -12,3 +12,105 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Workspaces {
+  id             String    @id @default(uuid())
+  createdAt      DateTime  @default(now())
+  workspaceOwner String    @default(uuid())
+  title          String
+  iconId         String
+  data           String
+  inTrash        String?
+  logo           String?
+  bannerUrl      String?
+  Folders        Folders[]
+  Files          Files[]
+}
+
+model Folders {
+  id          String     @id @default(uuid())
+  createdAt   DateTime   @default(now())
+  title       String
+  iconId      String
+  data        String
+  inTrash     String?
+  bannerUrl   String?
+  workspaceId String
+  workspaces  Workspaces @relation(fields: [workspaceId], references: [id])
+  Files       Files[]
+}
+
+model Files {
+  id          String     @id @default(uuid())
+  createdAt   DateTime   @default(now())
+  title       String
+  iconId      String
+  data        String
+  inTrash     String?
+  bannerUrl   String?
+  workspaceId String
+  workspaces  Workspaces @relation(fields: [workspaceId], references: [id])
+  folderId    String
+  folders     Folders    @relation(fields: [folderId], references: [id])
+}
+
+model Users {
+  id             String   @id @default(uuid())
+  email          String
+  password       String
+  username       String?
+  avatarUrl      String
+  updatedAt      DateTime @default(now())
+  paymentMethod  Json
+  billingAddress String
+}
+
+model Customers {
+  id               String @id @default(uuid())
+  stripeCustomerId String
+}
+
+model Prices {
+  id          String   @id @default(uuid())
+  productId   String
+  isActive    Boolean
+  description String
+  unitAmount  BigInt
+  currency    String
+  metadata    Json
+  product     Products @relation(fields: [productId], references: [id])
+}
+
+model Products {
+  id          String   @id @default(uuid())
+  active      Boolean
+  name        String
+  description String
+  image       String
+  metadata    Json
+  Prices      Prices[]
+}
+
+model Subscriptions {
+  id                 String   @id @default(uuid())
+  userId             String
+  metadata           Json
+  priceId            String
+  quantity           Int
+  cancelAtPeriodEnd  Boolean
+  createdAt          DateTime @default(now())
+  currentPeriodStart DateTime @default(now())
+  currentPeriodEnd   DateTime @default(now())
+  trialStart         DateTime @default(now())
+  trialEnd           DateTime @default(now())
+  endedAt            DateTime @default(now())
+  cancelAt           DateTime @default(now())
+  canceledAt         DateTime @default(now())
+}
+
+model Collaborators {
+  id          String   @id @default(uuid())
+  workspaceId String
+  userId      String
+  createdAt   DateTime @default(now())
+}
